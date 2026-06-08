@@ -1,29 +1,35 @@
 import { clearToken, getToken, setToken } from "@/lib/auth";
+import { API_BASE_URL, API_ORIGIN, API_URL } from "@/lib/config";
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL || "https://hofatrano.tina-lalaina.site/api").replace(/\/$/, "");
-const API_URL = new URL(API_BASE_URL);
-const API_ORIGIN = API_URL.origin;
+const stringifyErrorValue = (value: unknown): string => {
+  if (typeof value === "string") return value;
+  if (Array.isArray(value)) return value.map(stringifyErrorValue).filter(Boolean).join(" ");
+  if (value && typeof value === "object") {
+    return Object.entries(value)
+      .map(([field, fieldValue]) => `${field}: ${stringifyErrorValue(fieldValue)}`)
+      .filter((message) => !message.endsWith(": "))
+      .join(" ");
+  }
+  return "";
+};
 
 const parseErrorMessage = async (response: Response, fallbackMessage: string) => {
-  try {
-    const data = await response.json();
-    if (typeof data?.detail === "string" && data.detail.trim().length > 0) {
-      return data.detail;
-    }
-    if (typeof data?.message === "string" && data.message.trim().length > 0) {
-      return data.message;
-    }
-  } catch {
-    // ignore JSON parsing errors and use fallback
-  }
+  const rawText = await response.text().catch(() => "");
 
-  try {
-    const rawText = await response.text();
-    if (rawText.trim().length > 0) {
+  if (rawText.trim().length > 0) {
+    try {
+      const data = JSON.parse(rawText);
+      const detail = stringifyErrorValue(data?.detail);
+      if (detail.trim().length > 0) return detail;
+
+      const message = stringifyErrorValue(data?.message);
+      if (message.trim().length > 0) return message;
+
+      const fieldErrors = stringifyErrorValue(data);
+      if (fieldErrors.trim().length > 0) return fieldErrors;
+    } catch {
       return rawText.trim();
     }
-  } catch {
-    // ignore text parsing errors and use fallback
   }
 
   return fallbackMessage;
@@ -112,7 +118,7 @@ export const loginUser = async (identifier: string, password: string) => {
   const response = await fetch(`${API_BASE_URL}/auth/login/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username: identifier, password }),
+    body: JSON.stringify({ username: identifier, email: identifier, identifier, password }),
   });
   if (!response.ok) throw new Error(await parseErrorMessage(response, "Connexion impossible"));
   const data = await response.json();

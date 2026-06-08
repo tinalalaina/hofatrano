@@ -13,6 +13,7 @@ import {
   deleteHouse,
 } from "@/lib/api";
 import { House, formatPrice, resolveImageKey } from "@/data/mockData";
+import { API_BASE_URL, API_ORIGIN } from "@/lib/config";
 import {
   HouseFormValues,
   HouseStatus,
@@ -31,8 +32,6 @@ const MAX_PHOTOS = 12;
 const MAX_IMAGE_SIZE_MB = 5;
 const MAX_TOTAL_UPLOAD_SIZE_MB = 12;
 const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-const API_BASE_URL = (import.meta.env.VITE_API_URL || "https://hofatrano.tina-lalaina.site/api").replace(/\/$/, "");
-const API_ORIGIN = new URL(API_BASE_URL).origin;
 
 const normalizeDashboardImage = (image?: string) => {
   if (!image) return "";
