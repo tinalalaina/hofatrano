@@ -160,7 +160,7 @@ class HouseSerializer(serializers.ModelSerializer):
     class Meta:
         model = House
         fields = [
-            "id", "title", "description", "city", "quartier", "price", "caution_amount", "daily_reservation_price", "bedrooms", "bathrooms", "surface", "room_surfaces",
+            "id", "title", "description", "city", "quartier", "address", "latitude", "longitude", "price", "caution_amount", "daily_reservation_price", "bedrooms", "bathrooms", "surface", "room_surfaces",
             "image", "images", "image_keys", "image_urls", "image_files", "furnished", "parking", "water", "electricity", "available", "featured", "urgent",
             "views", "ownerName", "ownerPhone", "ownerPhone1", "ownerPhone2", "ownerPhone3", "ownerWhatsapp", "ownerPhoto", "ownerPhone1Input", "ownerPhone2Input", "ownerPhone3Input", "ownerWhatsappInput", "created_at", "equipments", "rating", "reviewCount", "status", "publication_paid", "publication_stopped", "publication_stopped_at",
         ]

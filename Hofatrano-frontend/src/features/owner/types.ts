@@ -66,6 +66,8 @@ export interface HouseFormValues {
   city: string;
   quartier: string;
   address: string;
+  latitude: string;
+  longitude: string;
   price: string;
   cautionAmount: string;
   dailyReservationPrice: string;
