@@ -1,8 +1,6 @@
 import { House, resolveImageKey } from "@/data/mockData";
 import { authHeaders } from "@/lib/auth";
-
-const API_BASE_URL = (import.meta.env.VITE_API_URL || "https://hofatrano.tina-lalaina.site/api").replace(/\/$/, "");
-const API_ORIGIN = new URL(API_BASE_URL).origin;
+import { API_BASE_URL, API_ORIGIN } from "@/lib/config";
 
 export interface HouseQuery {
   city?: string;

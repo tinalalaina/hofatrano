@@ -9,14 +9,15 @@ from .models import Favorite, House, PlatformSetting, PublicationPaymentInvoice,
 
 
 class RegisterSerializer(serializers.ModelSerializer):
-    role = serializers.ChoiceField(choices=UserProfile.Role.choices, default=UserProfile.Role.CLIENT)
+    role = serializers.ChoiceField(choices=UserProfile.Role.choices, default=UserProfile.Role.CLIENT, required=False)
+    user_type = serializers.ChoiceField(choices=UserProfile.Role.choices, required=False, write_only=True)
     password = serializers.CharField(write_only=True)
     phone = serializers.CharField(required=False, allow_blank=True)
     photo_url = serializers.URLField(required=False, allow_blank=True)
 
     class Meta:
         model = User
-        fields = ["username", "email", "password", "first_name", "last_name", "role", "phone", "photo_url"]
+        fields = ["username", "email", "password", "first_name", "last_name", "role", "user_type", "phone", "photo_url"]
 
     def validate_username(self, value):
         normalized_value = value.strip()
@@ -33,7 +34,8 @@ class RegisterSerializer(serializers.ModelSerializer):
         return normalized_value
 
     def create(self, validated_data):
-        role = validated_data.pop("role", UserProfile.Role.CLIENT)
+        role = validated_data.pop("role", validated_data.pop("user_type", UserProfile.Role.CLIENT))
+        validated_data.pop("user_type", None)
         phone = validated_data.pop("phone", "")
         photo_url = validated_data.pop("photo_url", "")
         user = User.objects.create_user(**validated_data)
