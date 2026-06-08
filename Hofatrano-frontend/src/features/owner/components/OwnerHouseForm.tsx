@@ -99,6 +99,29 @@ export const OwnerHouseForm = ({ initialValues, initialPhotos = [], onSubmit, su
           </div>
         </div>
 
+        <div className="grid md:grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <Label>Latitude</Label>
+            <Input
+              type="number"
+              step="any"
+              value={values.latitude}
+              onChange={(e) => setValues({ ...values, latitude: e.target.value })}
+              placeholder="Ex: -18.8792"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Longitude</Label>
+            <Input
+              type="number"
+              step="any"
+              value={values.longitude}
+              onChange={(e) => setValues({ ...values, longitude: e.target.value })}
+              placeholder="Ex: 47.5079"
+            />
+          </div>
+        </div>
+
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           <div className="space-y-2">
             <Label>Chambres</Label>

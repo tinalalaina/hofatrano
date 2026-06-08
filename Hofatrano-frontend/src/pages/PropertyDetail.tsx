@@ -2,6 +2,7 @@ import { useParams, Link, useSearchParams, useNavigate } from "react-router-dom"
 import { formatPrice } from "@/data/mockData";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { PropertyLocationMap } from "@/components/property/PropertyLocationMap";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -124,6 +125,7 @@ const PropertyDetail = () => {
               ].map((a) => <div key={a.label} className="flex items-center gap-2 text-sm">{amenityIcon(a.val)} {a.label}</div>)}</div>
             </div>
             {house.equipments.length > 0 && <div><h2 className="text-lg font-display text-foreground mb-3">Équipements</h2><div className="flex flex-wrap gap-2">{house.equipments.map((e) => <Badge key={e} variant="secondary">{e}</Badge>)}</div></div>}
+            <PropertyLocationMap house={house} />
           </div>
 
           <div className="space-y-4">

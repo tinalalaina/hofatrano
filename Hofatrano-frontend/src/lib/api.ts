@@ -125,6 +125,8 @@ type RawHouse = Omit<House, "image" | "images" | "createdAt"> & {
   image_keys?: string[];
   created_at?: string;
   createdAt?: string;
+  caution_amount?: number | string;
+  daily_reservation_price?: number | string;
 };
 
 const normalizeHouse = (house: RawHouse): House => ({
@@ -134,13 +136,16 @@ const normalizeHouse = (house: RawHouse): House => ({
   image: resolveImageKey(house.image.startsWith("/") ? `${API_ORIGIN}${house.image}` : house.image),
   images: house.images.map((img) => resolveImageKey(img.startsWith("/") ? `${API_ORIGIN}${img}` : img)),
   ownerPhone: house.ownerPhone || "",
-  ownerPhone1: (house as any).ownerPhone1 || "",
-  ownerPhone2: (house as any).ownerPhone2 || "",
-  ownerPhone3: (house as any).ownerPhone3 || "",
+  ownerPhone1: house.ownerPhone1 || "",
+  ownerPhone2: house.ownerPhone2 || "",
+  ownerPhone3: house.ownerPhone3 || "",
   ownerWhatsapp: house.ownerWhatsapp || "",
-  caution_amount: Number((house as any).caution_amount || 0),
-  daily_reservation_price: Number((house as any).daily_reservation_price || 0),
+  caution_amount: Number(house.caution_amount || 0),
+  daily_reservation_price: Number(house.daily_reservation_price || 0),
   ownerPhoto: house.ownerPhoto || "",
+  address: house.address || "",
+  latitude: house.latitude ?? null,
+  longitude: house.longitude ?? null,
 });
 
 const jsonHeaders = () => ({ "Content-Type": "application/json", ...authHeaders() });

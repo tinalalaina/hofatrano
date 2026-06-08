@@ -11,6 +11,9 @@ export interface House {
   description: string;
   city: string;
   quartier: string;
+  address?: string;
+  latitude?: number | string | null;
+  longitude?: number | string | null;
   price: number;
   caution_amount?: number;
   daily_reservation_price?: number;
