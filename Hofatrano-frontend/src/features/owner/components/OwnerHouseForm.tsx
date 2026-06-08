@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cities, quartiers } from "@/data/mockData";
 import { PhotoUploader } from "@/features/owner/components/PhotoUploader";
 import { HouseFormValues, UploadPhoto } from "@/features/owner/types";
+import { LocateFixed } from "lucide-react";
 import { useMemo, useState, type FormEvent } from "react";
 
 interface Props {
@@ -21,6 +22,8 @@ export const OwnerHouseForm = ({ initialValues, initialPhotos = [], onSubmit, su
   const [values, setValues] = useState<HouseFormValues>(initialValues);
   const [photos, setPhotos] = useState<UploadPhoto[]>(initialPhotos);
   const [photoError, setPhotoError] = useState<string | null>(null);
+  const [locationStatus, setLocationStatus] = useState<string | null>(null);
+  const [isLocating, setIsLocating] = useState(false);
 
   const cityQuartiers = useMemo(() => quartiers[values.city] || [], [values.city]);
 
@@ -31,6 +34,42 @@ export const OwnerHouseForm = ({ initialValues, initialPhotos = [], onSubmit, su
     await onSubmit(values, photos);
     setValues(initialValues);
     setPhotos([]);
+  };
+
+  const handleUseCurrentLocation = () => {
+    if (!("geolocation" in navigator)) {
+      setLocationStatus("La géolocalisation n’est pas disponible sur ce navigateur.");
+      return;
+    }
+
+    setIsLocating(true);
+    setLocationStatus("Recherche de votre position en cours…");
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setValues((currentValues) => ({
+          ...currentValues,
+          latitude: position.coords.latitude.toFixed(6),
+          longitude: position.coords.longitude.toFixed(6),
+        }));
+        setLocationStatus("Position trouvée. Vérifiez que le point correspond bien à la maison.");
+        setIsLocating(false);
+      },
+      (error) => {
+        const message =
+          error.code === error.PERMISSION_DENIED
+            ? "Autorisez l’accès à votre position pour remplir automatiquement la latitude et la longitude."
+            : "Impossible de récupérer votre position. Réessayez ou saisissez les coordonnées manuellement.";
+
+        setLocationStatus(message);
+        setIsLocating(false);
+      },
+      {
+        enableHighAccuracy: true,
+        maximumAge: 0,
+        timeout: 10000,
+      },
+    );
   };
 
   return (
@@ -99,26 +138,41 @@ export const OwnerHouseForm = ({ initialValues, initialPhotos = [], onSubmit, su
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-3">
-          <div className="space-y-2">
-            <Label>Latitude</Label>
-            <Input
-              type="number"
-              step="any"
-              value={values.latitude}
-              onChange={(e) => setValues({ ...values, latitude: e.target.value })}
-              placeholder="Ex: -18.8792"
-            />
+        <div className="space-y-3 rounded-lg border p-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <Label>Position de la maison</Label>
+              <p className="text-sm text-muted-foreground">
+                Si vous êtes sur place, utilisez votre position actuelle pour remplir la latitude et la longitude.
+              </p>
+            </div>
+            <Button type="button" variant="outline" size="sm" onClick={handleUseCurrentLocation} disabled={isLocating}>
+              <LocateFixed className="h-4 w-4" />
+              {isLocating ? "Recherche…" : "Utiliser ma position"}
+            </Button>
           </div>
-          <div className="space-y-2">
-            <Label>Longitude</Label>
-            <Input
-              type="number"
-              step="any"
-              value={values.longitude}
-              onChange={(e) => setValues({ ...values, longitude: e.target.value })}
-              placeholder="Ex: 47.5079"
-            />
+          {locationStatus ? <p className="text-sm text-muted-foreground">{locationStatus}</p> : null}
+          <div className="grid md:grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>Latitude</Label>
+              <Input
+                type="number"
+                step="any"
+                value={values.latitude}
+                onChange={(e) => setValues({ ...values, latitude: e.target.value })}
+                placeholder="Ex: -18.8792"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Longitude</Label>
+              <Input
+                type="number"
+                step="any"
+                value={values.longitude}
+                onChange={(e) => setValues({ ...values, longitude: e.target.value })}
+                placeholder="Ex: 47.5079"
+              />
+            </div>
           </div>
         </div>
 
