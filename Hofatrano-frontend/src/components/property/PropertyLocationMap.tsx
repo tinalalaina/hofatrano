@@ -1,8 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { House } from "@/data/mockData";
 import { MapPin, Navigation } from "lucide-react";
-import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
 
 interface PropertyLocationMapProps {
   house: House;
@@ -16,11 +14,24 @@ const toCoordinate = (value: number | string | null | undefined) => {
 
 const getFullAddress = (house: House) => house.address?.trim() || `${house.quartier}, ${house.city}`;
 
+const getOpenStreetMapEmbedUrl = (latitude: number, longitude: number) => {
+  const offset = 0.01;
+  const bbox = [longitude - offset, latitude - offset, longitude + offset, latitude + offset].join(",");
+  const params = new URLSearchParams({
+    bbox,
+    layer: "mapnik",
+    marker: `${latitude},${longitude}`,
+  });
+
+  return `https://www.openstreetmap.org/export/embed.html?${params.toString()}`;
+};
+
 export const PropertyLocationMap = ({ house }: PropertyLocationMapProps) => {
   const latitude = toCoordinate(house.latitude);
   const longitude = toCoordinate(house.longitude);
   const hasCoordinates = latitude !== null && longitude !== null;
   const fullAddress = getFullAddress(house);
+  const mapUrl = hasCoordinates ? getOpenStreetMapEmbedUrl(latitude, longitude) : null;
 
   const openDirections = () => {
     if (!hasCoordinates) return;
@@ -55,15 +66,13 @@ export const PropertyLocationMap = ({ house }: PropertyLocationMapProps) => {
         <div className="space-y-3">
           <p className="text-sm text-muted-foreground">{fullAddress}</p>
           <div className="overflow-hidden rounded-xl border border-border shadow-sm">
-            <MapContainer center={[latitude, longitude]} zoom={16} scrollWheelZoom={false} className="h-[320px] w-full sm:h-[380px]">
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              <Marker position={[latitude, longitude]}>
-                <Popup>{fullAddress}</Popup>
-              </Marker>
-            </MapContainer>
+            <iframe
+              src={mapUrl ?? undefined}
+              title={`Carte OpenStreetMap - ${fullAddress}`}
+              className="h-[320px] w-full border-0 sm:h-[380px]"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
           </div>
           <Button type="button" onClick={openDirections} className="gap-2">
             <Navigation className="h-4 w-4" />
