@@ -1,8 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { House } from "@/data/mockData";
 import { MapPin, Navigation } from "lucide-react";
-import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
 
 interface PropertyLocationMapProps {
   house: House;
@@ -21,6 +19,11 @@ export const PropertyLocationMap = ({ house }: PropertyLocationMapProps) => {
   const longitude = toCoordinate(house.longitude);
   const hasCoordinates = latitude !== null && longitude !== null;
   const fullAddress = getFullAddress(house);
+
+  const mapDelta = 0.005;
+  const mapEmbedUrl = hasCoordinates
+    ? `https://www.openstreetmap.org/export/embed.html?bbox=${longitude - mapDelta}%2C${latitude - mapDelta}%2C${longitude + mapDelta}%2C${latitude + mapDelta}&layer=mapnik&marker=${latitude}%2C${longitude}`
+    : "";
 
   const openDirections = () => {
     if (!hasCoordinates) return;
@@ -55,15 +58,13 @@ export const PropertyLocationMap = ({ house }: PropertyLocationMapProps) => {
         <div className="space-y-3">
           <p className="text-sm text-muted-foreground">{fullAddress}</p>
           <div className="overflow-hidden rounded-xl border border-border shadow-sm">
-            <MapContainer center={[latitude, longitude]} zoom={16} scrollWheelZoom={false} className="h-[320px] w-full sm:h-[380px]">
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              <Marker position={[latitude, longitude]}>
-                <Popup>{fullAddress}</Popup>
-              </Marker>
-            </MapContainer>
+            <iframe
+              title={`Carte de ${fullAddress}`}
+              src={mapEmbedUrl}
+              className="h-[320px] w-full sm:h-[380px]"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
           </div>
           <Button type="button" onClick={openDirections} className="gap-2">
             <Navigation className="h-4 w-4" />
