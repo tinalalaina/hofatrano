@@ -1,19 +1,14 @@
-import Footer from "@/components/Footer";
-import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OwnerHouseForm } from "@/features/owner/components/OwnerHouseForm";
 import { OwnerHousesTable } from "@/features/owner/components/OwnerHousesTable";
-import { OwnerKpiCards } from "@/features/owner/components/OwnerKpiCards";
-import { OwnerQuickActions } from "@/features/owner/components/OwnerQuickActions";
+import OwnerDashboardLayout from "@/features/owner/components/OwnerDashboardLayout";
 import { OwnerReservationRequests } from "@/features/owner/components/OwnerReservationRequests";
 import { OwnerVisitRequests } from "@/features/owner/components/OwnerVisitRequests";
 import { useOwnerDashboardData } from "@/features/owner/hooks/useOwnerDashboardData";
 import { HouseFormValues, OwnerHouse } from "@/features/owner/types";
 import { createOrGetPublicationInvoiceForHouse } from "@/lib/api";
-import { ProfileCompletionCard } from "@/components/ProfileCompletionCard";
 import { useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -107,43 +102,16 @@ const OwnerDashboard = () => {
   }, [editingHouse]);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <main className="container mx-auto px-4 py-10 flex-1">Chargement dashboard propriétaire...</main>
-        <Footer />
-      </div>
-    );
+    return <div className="min-h-screen bg-[#f8fafc] p-10">Chargement dashboard propriétaire...</div>;
   }
 
+  const dashboardData = data?.stats ? { stats: data.stats, houses: data.houses, visits: data.visits, reservations: data.reservations } : undefined;
+
   return (
-    <div className="min-h-screen flex flex-col bg-muted/20">
-      <Header />
-      <main className="container mx-auto px-4 py-8 flex-1 space-y-6">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-display">Dashboard propriétaire</h1>
-          <p className="text-muted-foreground">Gérez vos maisons, visites et réservations en un seul espace.</p>
-        </div>
-        <ProfileCompletionCard />
-
-        {data?.stats && <OwnerKpiCards stats={data.stats} />}
-        <OwnerQuickActions onNavigate={setTab} />
-
-        <Tabs value={tab} onValueChange={setTab}>
-          <TabsList className="grid md:grid-cols-5 h-auto gap-2">
-            <TabsTrigger value="dashboard">Vue globale</TabsTrigger>
-            <TabsTrigger value="maisons">Mes maisons</TabsTrigger>
-            <TabsTrigger value="ajouter">Ajouter maison</TabsTrigger>
-            <TabsTrigger value="visites">Demandes visite</TabsTrigger>
-            <TabsTrigger value="reservations">Demandes réservation</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="dashboard" className="space-y-4">
-            <p className="text-sm text-muted-foreground">Utilisez les onglets pour accéder à chaque module propriétaire.</p>
-          </TabsContent>
-
-          <TabsContent value="maisons">
-            <OwnerHousesTable
+    <OwnerDashboardLayout tab={tab} onTabChange={setTab} data={dashboardData}>
+      <div className="space-y-6">
+        {tab === "maisons" && (
+          <OwnerHousesTable
               houses={data?.houses || []}
               onEdit={(houseId) => {
                 setEditingHouseId(houseId);
@@ -164,9 +132,10 @@ const OwnerDashboard = () => {
               onStopPublication={(house) => setStopTargetHouse(house)}
               onOpenDetails={(houseId) => navigate(`/maison/${houseId}?from=owner-houses`)}
             />
-          </TabsContent>
+        )}
 
-          <TabsContent value="ajouter" className="space-y-3">
+        {tab === "ajouter" && (
+          <div className="space-y-3">
             <p className="text-sm text-muted-foreground">{editingHouse ? "Modifier votre maison" : "Créer une nouvelle annonce"}</p>
             <OwnerHouseForm
               key={editingHouse?.id || "create"}
@@ -190,9 +159,10 @@ const OwnerDashboard = () => {
                 }
               }}
             />
-          </TabsContent>
+          </div>
+        )}
 
-          <TabsContent value="visites">
+        {tab === "visites" && (
             <OwnerVisitRequests
               visits={data?.visits || []}
               isMutating={isVisitMutating || isVisitDepositMutating || isVisitStatusMutating}
@@ -201,17 +171,16 @@ const OwnerDashboard = () => {
               onStatusChange={(visitId, status) => updateVisitStatusChoice({ visitId, status })}
               onOpenDetails={(houseId) => navigate(`/maison/${houseId}?from=owner-visits`)}
             />
-          </TabsContent>
+        )}
 
-          <TabsContent value="reservations">
+        {tab === "reservations" && (
             <OwnerReservationRequests
               reservations={data?.reservations || []}
               isMutating={isReservationMutating}
               onStatusChange={(reservationId, status) => updateReservationStatus({ reservationId, status })}
             />
-          </TabsContent>
-        </Tabs>
-      </main>
+        )}
+      </div>
       <Dialog
         open={Boolean(stopTargetHouse)}
         onOpenChange={(open) => {
@@ -268,8 +237,7 @@ const OwnerDashboard = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <Footer />
-    </div>
+    </OwnerDashboardLayout>
   );
 };
 
